@@ -14,6 +14,11 @@ variable "wp_vm_count" {
 
   validation {
     condition     = var.wp_vm_count > 1
-    error_message = "Minimun 2 Machines"
+    error_message = "Minimun 2 Machines are needed"
   }
 }
+
+# variable "wp_vms_ssh" {
+#   type = string
+#   description = "SSH Key to access the VMs"
+# }

@@ -36,16 +36,22 @@ resource "digitalocean_loadbalancer" "wp_lb" {
 
   vpc_uuid = digitalocean_vpc.wp_net.id
 
-  droplet_ids = [digitalocean_droplet.vm_wp.id]
+  droplet_ids = digitalocean_droplet.vm_wp[*].id
+}
+
+resource "digitalocean_ssh_key" "ssh" {
+  name       = "vm-devops"
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
 resource "digitalocean_droplet" "vm_wp" {
-  name     = "vm-wp"
+  name     = "vm-wp-${count.index}"
   size     = "s-2vcpu-2gb"
   image    = "ubuntu-22-04-x64"
   region   = var.region
   vpc_uuid = digitalocean_vpc.wp_net.id
-  count    = 2
+  count    = var.wp_vm_count
+  ssh_keys = [digitalocean_ssh_key.ssh.fingerprint]
 }
 
 resource "digitalocean_droplet" "vm_nfs" {
@@ -54,6 +60,7 @@ resource "digitalocean_droplet" "vm_nfs" {
   image    = "ubuntu-22-04-x64"
   region   = var.region
   vpc_uuid = digitalocean_vpc.wp_net.id
+  ssh_keys = [digitalocean_ssh_key.ssh.fingerprint]
 }
 
 resource "digitalocean_database_db" "wp_database" {
